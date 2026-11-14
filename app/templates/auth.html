@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="auth-layout">
+  <div class="auth-story"><img src="{{ url_for('static',filename='images/scenic-railway.webp') }}" alt="A scenic train winding through green hills" width="1536" height="1024"><div class="auth-story-caption"><h2>Your window<br>to somewhere new.</h2><p>One account for your next reservation.</p></div></div>
+  <div class="auth-panel">
+    <h1>{{ 'Welcome back.' if mode == 'sign-in' else 'Come aboard.' }}</h1>
+    <p>Sign in to reserve seats and manage your own bookings.</p>
+    {% if clerk.key %}<p id="auth-loading" role="status">Loading secure sign-in…</p><div id="auth-form" data-mode="{{ mode }}" data-next="{{ next_path }}"></div><noscript><p class="notice">Enable JavaScript to use Clerk sign-in. Train search remains available.</p></noscript>
+    {% else %}<p class="notice" role="alert">Sign-in is not configured yet. Pull the selected application’s development keys using the setup guide, then restart Flask.</p>{% endif %}
+    <a class="text-link" href="{{ url_for('index') }}">Browse trains</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% from 'icons.html' import icon %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Search fictional railway schedules, reserve a seat and demonstrate relational database transactions.">
+  <title>Railway Reservation System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+  <script defer src="{{ url_for('static',filename='ui.js') }}"></script>
+  {% if clerk.key %}
+  <script defer crossorigin="anonymous" src="https://{{ clerk.domain }}/npm/@clerk/ui@1/dist/ui.browser.js"></script>
+  <script defer crossorigin="anonymous" data-clerk-publishable-key="{{ clerk.key }}" src="https://{{ clerk.domain }}/npm/@clerk/clerk-js@6/dist/clerk.browser.js"></script>
+  <script defer src="{{ url_for('static',filename='auth.js') }}"></script>
+  {% endif %}
+</head>
+<body class="page-{{ request.endpoint or 'error' }}">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header"><div class="container header-inner">
+    <a class="brand" href="{{ url_for('index') }}" aria-label="Railway Reservation System home"><span class="brand-symbol">{{ icon('train',26) }}</span><span>Railway<span class="brand-caption">Reservation System</span></span></a>
+    <nav aria-label="Main navigation">
+      <a href="{{ url_for('index') }}" {% if request.endpoint in ['index','run'] %}aria-current="page"{% endif %}>Find a train</a>
+      <a href="{{ url_for('lookup') }}" {% if request.endpoint == 'lookup' %}aria-current="page"{% endif %}>My booking</a>
+      <a class="schedule-link" href="{{ url_for('schedule') }}" {% if request.endpoint == 'schedule' %}aria-current="page"{% endif %}>Manage schedule</a>
+      <a class="sign-in-link" data-signed-out href="{{ url_for('sign_in') }}">Sign in</a>
+      <a class="nav-action" data-signed-out href="{{ url_for('sign_up') }}">Create account</a>
+      <span id="user-button" aria-label="Account"></span>
+    </nav>
+  </div></header>
+  <main id="main-content" class="container app-main">
+    <p id="auth-error" class="notice" role="alert" hidden>Sign-in could not load. Check your connection and reload this page.</p>
+    {% for message in get_flashed_messages() %}<p class="notice" role="status">{{ message }}</p>{% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer"><div class="container footer-inner"><a class="footer-wordmark" href="{{ url_for('index') }}">{{ icon('train',20) }} Railway Reservation System</a><p>DBMS classroom demo. Fictional services. Full-run seat reservations.</p><span class="image-note">Illustrative railway imagery</span></div></footer>
+</body>
+</html>

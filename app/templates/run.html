@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% from 'icons.html' import icon %}
+{% block content %}
+<a class="text-link back-link" href="{{ url_for('index') }}">Back to search</a>
+<div class="run-heading"><div><span class="train-number">{{ icon('train',20) }} {{ run.train_number }} / {{ run.service_date }}</span><h1>{{ run.train_name }}</h1><p>A seat reserved for the whole run.</p></div><div class="fare-block"><span>Full-run fare</span><strong>₹{{ fare|int }}</strong><small>One passenger</small></div></div>
+<div class="booking-layout">
+  <section class="seat-selection">
+    <h2>Choose your seat.</h2><p class="section-description">Select an available seat, then add your passenger details.</p>
+    <form method="post" action="{{ url_for('reserve') }}">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <fieldset><legend>Seat inventory</legend>
+        <div class="seat-legend"><span><i class="available-key"></i>Available</span><span><i class="selected-key"></i>Selected</span><span><i class="reserved-key"></i>Reserved</span></div>
+        <div class="seats">{% for s in seats %}<label class="seat-option"><input type="radio" name="seat_id" value="{{ s.seat_id }}" required {% if not s.available %}disabled{% endif %}><span class="seat-tile">{{ icon('seat',26) }}<strong>{{ s.coach_code }} / {{ s.seat_number }}</strong><small>{{ 'Available' if s.available else 'Reserved' }}</small></span></label>{% else %}<p>No seats added to this run yet.</p>{% endfor %}</div>
+      </fieldset>
+      <h3 class="passenger-title">Who’s travelling?</h3>
+      <div class="filters"><label>Passenger name<input name="full_name" maxlength="120" autocomplete="name" placeholder="Demo Traveller" required></label><label>Email<input name="email" type="email" maxlength="254" autocomplete="email" placeholder="traveller@example.test" required></label></div>
+      <p class="form-note">Use fictional details for the classroom demo. Availability is checked again when you book.</p>
+      <button class="confirm-button" {% if not seats|selectattr('available')|list %}disabled{% endif %}>Confirm seat for ₹{{ fare }} {{ icon('arrow',18) }}</button>
+    </form>
+  </section>
+  <aside class="route-sidebar"><h2>Your route</h2><p>{{ run.service_date }}</p><ol class="stops">{% for s in stops %}<li><span>{{ s.station_name }}</span><small>{{ (s.arrival_time or s.departure_time).strftime('%H:%M') if (s.arrival_time or s.departure_time) else 'Not set' }}</small></li>{% endfor %}</ol><div class="route-note">{{ icon('ticket',22) }}<p>Your reservation holds this seat from the first station to the last.</p></div></aside>
+</div>
+{% endblock %}

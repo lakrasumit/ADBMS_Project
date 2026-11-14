@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% from 'icons.html' import icon %}
+{% block content %}
+<section class="travel-hero" aria-labelledby="hero-heading">
+  <div class="hero-copy">
+    <h1 id="hero-heading">Take the<br>scenic way.</h1>
+    <p class="hero-description">Find a train. Choose your seat.<br>Make it yours.</p>
+    <a class="text-link" href="#journey-search">Find your next train <span>{{ icon('arrow') }}</span></a>
+  </div>
+  <figure class="hero-picture">
+    <img src="{{ url_for('static',filename='images/scenic-railway.webp') }}" width="1536" height="1024" alt="A green passenger train crossing a stone viaduct through sunlit mountain scenery" fetchpriority="high">
+    <figcaption>A different perspective, from the rails.</figcaption>
+  </figure>
+</section>
+<section id="journey-search" class="journey-search" aria-label="Search train runs">
+  <div class="search-heading"><span>{{ icon('train',22) }} Find your train</span><span>One seat. A whole run.</span></div>
+  <form method="get" class="journey-form">
+    <div class="journey-field"><label for="origin"><span id="origin-label">{{ icon('pin',18) }} From</span></label><select id="origin" name="origin" required><option value="">Departure station</option>{% for s in stations %}<option value="{{ s.station_id }}" {% if request.args.get('origin') == s.station_id|string %}selected{% endif %}>{{ s.station_name }} ({{ s.station_code|trim }})</option>{% endfor %}</select></div>
+    <button class="swap-stations" type="button" title="Swap stations" aria-label="Swap origin and destination" hidden>{{ icon('swap',20) }}</button>
+    <div class="journey-field"><label for="destination"><span id="destination-label">{{ icon('pin',18) }} To</span></label><select id="destination" name="destination" required><option value="">Arrival station</option>{% for s in stations %}<option value="{{ s.station_id }}" {% if request.args.get('destination') == s.station_id|string %}selected{% endif %}>{{ s.station_name }} ({{ s.station_code|trim }})</option>{% endfor %}</select></div>
+    <label><span>{{ icon('calendar',18) }} Service date</span><input type="date" name="date" value="{{ request.args.get('date',today) }}" required></label>
+    <button class="search-button">{{ icon('search',20) }} Search trains</button>
+  </form>
+  {% if not stations %}<p class="notice">No stations yet. Initialize the sample data or add a schedule.</p>{% endif %}
+</section>
+{% if matches is not none %}
+<section class="departure-section" aria-labelledby="departures-title">
+  <div class="section-heading"><h2 id="departures-title">Scheduled departures</h2><p>{{ request.args.get('date') }}</p></div>
+  {% if matches %}<div class="departure-list">{% for r in matches %}
+  <article class="departure-row">
+    <div class="train-identity"><span class="train-mark">{{ icon('train',25) }}</span><div><span class="train-number">{{ r.train_number }}</span><h3>{{ r.train_name }}</h3></div></div>
+    <div class="departure-times"><div><strong>{{ r.departure_time.strftime('%H:%M') if r.departure_time else 'Not set' }}</strong><span>Departs</span></div><span class="rail-line" aria-hidden="true"></span><div><strong>{{ r.arrival_time.strftime('%H:%M') if r.arrival_time else 'Not set' }}</strong><span>Arrives</span></div></div>
+    <div class="seat-count"><strong>{{ r.available }}</strong><span>seats available</span></div>
+    <a class="button secondary" href="{{ url_for('run',run_id=r.run_id) }}">View seats {{ icon('arrow',18) }}</a>
+  </article>{% endfor %}</div>
+  {% else %}<div class="empty-state">{{ icon('train',32) }}<h3>No departures on this route.</h3><p>No runs match this date and station order. Try another date or reverse the stations.</p><a class="text-link" href="#journey-search">Change your search {{ icon('arrow',18) }}</a></div>{% endif %}
+</section>
+{% else %}
+<section class="reservation-guide" aria-labelledby="reservation-heading">
+  <div><h2 id="reservation-heading">A seat for the<br>whole journey.</h2><p>Search follows station order. Your reservation holds the seat for the full dated run, even when searching between intermediate stops.</p></div>
+  <div class="guide-details"><div>{{ icon('ticket',22) }}<span>Full-run fare</span><strong>₹{{ fare|int }}</strong></div><div>{{ icon('seat',22) }}<span>One passenger, one seat</span>{{ icon('check',20) }}</div><div>{{ icon('calendar',22) }}<span>A dated train run</span>{{ icon('check',20) }}</div><a class="text-link" href="{{ url_for('lookup') }}">Already have a PNR? Find your booking {{ icon('arrow',18) }}</a></div>
+</section>
+{% endif %}
+{% endblock %}
